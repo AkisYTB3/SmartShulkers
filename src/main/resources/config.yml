@@ -1,4 +1,4 @@
-# AutoShulker Configuration
+# SmartShulkers Configuration
 sounds:
   pickup: "entity.item.pickup"
   garbage: "block.lava.extinguish"
