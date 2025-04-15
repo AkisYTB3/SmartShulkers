@@ -1,6 +1,6 @@
 name: AutoShulker
 version: ${version}
-main: org.notionsmp.autoshulker.AutoShulker
+main: org.notionsmp.smartshulkers.SmartShulkers
 api-version: '1.21'
 load: STARTUP
 authors: [ Akis (discord: yeahakis) ]

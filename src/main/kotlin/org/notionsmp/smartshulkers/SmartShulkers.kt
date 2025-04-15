@@ -1,4 +1,4 @@
-package org.notionsmp.autoshulker
+package org.notionsmp.smartshulkers
 
 import co.aikar.commands.PaperCommandManager
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -16,11 +16,11 @@ import org.bukkit.inventory.ShapedRecipe
 import org.bukkit.inventory.meta.BlockStateMeta
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.plugin.java.JavaPlugin
-import org.notionsmp.autoshulker.commands.ShulkerCommands
+import org.notionsmp.smartshulkers.commands.ShulkerCommands
 
-class AutoShulker : JavaPlugin(), Listener {
+class SmartShulkers : JavaPlugin(), Listener {
     companion object {
-        lateinit var instance: AutoShulker
+        lateinit var instance: SmartShulkers
             private set
     }
 
@@ -77,7 +77,7 @@ class AutoShulker : JavaPlugin(), Listener {
 
     private fun registerManagers() {
         commandManager = PaperCommandManager(this).apply {
-            registerCommand(ShulkerCommands(this@AutoShulker))
+            registerCommand(ShulkerCommands(this@SmartShulkers))
         }
         server.pluginManager.registerEvents(this, this)
     }
@@ -87,7 +87,7 @@ class AutoShulker : JavaPlugin(), Listener {
         Bukkit.removeRecipe(autoShulkerKey)
         Bukkit.removeRecipe(garbageShulkerKey)
         if (isAutoShulkerEnabled()) registerRecipes()
-        Bukkit.getConsoleSender().sendMessage(mm.deserialize("<green>AutoShulker config reloaded!"))
+        Bukkit.getConsoleSender().sendMessage(mm.deserialize("<green>SmartShulkers config reloaded!"))
     }
 
     private fun isAutoShulkerEnabled() = config.getBoolean("$SETTINGS_AUTO.enabled", true)
