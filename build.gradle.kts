@@ -30,7 +30,7 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21-R0.1-SNAPSHOT")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib")
     compileOnly("net.kyori:adventure-text-minimessage:4.19.0")
 }
 
@@ -40,10 +40,9 @@ tasks {
     }
 
     shadowJar {
-        relocate("co.aikar.commands", "org.notionsmp.dreiMotd.libs.acf")
-        relocate("co.aikar.locales", "org.notionsmp.dreiMotd.libs.locales")
 
-        exclude("org.projectlombok:lombok:.*")
+        relocate("org.jetbrains.kotlin", "org.notionsmp.shadow.kotlin")
+
         exclude("net.kyori:.*")
         exclude("META-INF/**")
 
