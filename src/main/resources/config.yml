@@ -1,0 +1,18 @@
+# AutoShulker Configuration
+sounds:
+  pickup: "entity.item.pickup"
+  garbage: "block.lava.extinguish"
+messages:
+  pickup: "<green>Picked up <amount> <item>!"
+permissions:
+  craft_autoshulker: "autoshulker.craft.autoshulker"
+  craft_garbageshulker: "autoshulker.craft.garbageshulker"
+  modify_autoshulker: "autoshulker.modify.autoshulker"
+  modify_garbageshulker: "autoshulker.modify.garbageshulker"
+settings:
+  autoshulker:
+    name: "<gradient:gold:yellow>AutoShulker</gradient>"
+    enabled: true
+  garbageshulker:
+    name: "<gradient:red:dark_red>Garbage Shulker</gradient>"
+    enabled: true
