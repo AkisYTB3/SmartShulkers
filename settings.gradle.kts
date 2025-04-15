@@ -1,1 +1,1 @@
-rootProject.name = "AutoShulker"
+rootProject.name = "SmartShulkers"
