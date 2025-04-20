@@ -123,8 +123,10 @@ class SmartShulkers : JavaPlugin(), Listener {
     private fun registerRecipes() {
         if (isSmartShulkerEnabled()) {
             SHULKER_BOX_TYPES.forEach { shulkerType ->
-                val recipeKey = NamespacedKey(this, "smartshulker_${shulkerType.name.lowercase()}")
-                val recipe = ShapelessRecipe(recipeKey, createSmartShulker(ItemStack(shulkerType), emptyList()))
+                val recipe = ShapelessRecipe(
+                    NamespacedKey(this, "smartshulker_${shulkerType.name.lowercase()}"),
+                    createSmartShulker(ItemStack(shulkerType), emptyList())
+                )
                 recipe.addIngredient(Material.BOOK)
                 recipe.addIngredient(shulkerType)
                 Bukkit.addRecipe(recipe)
@@ -132,34 +134,32 @@ class SmartShulkers : JavaPlugin(), Listener {
         }
         if (isGarbageShulkerEnabled()) {
             SHULKER_BOX_TYPES.forEach { shulkerType ->
-                val recipeKey = NamespacedKey(this, "garbageshulker_${shulkerType.name.lowercase()}")
-                val recipe = ShapelessRecipe(recipeKey, createGarbageShulker(ItemStack(shulkerType), emptyList()))
+                val recipe = ShapelessRecipe(
+                    NamespacedKey(this, "garbageshulker_${shulkerType.name.lowercase()}"),
+                    createGarbageShulker(ItemStack(shulkerType), emptyList())
+                )
                 recipe.addIngredient(Material.LAVA_BUCKET)
                 recipe.addIngredient(shulkerType)
                 Bukkit.addRecipe(recipe)
             }
         }
-
-        SHULKER_BOX_TYPES.forEach { shulkerType ->
-            val recipeKey = NamespacedKey(this, "uncraft_smartshulker_${shulkerType.name.lowercase()}")
-            val recipe = ShapelessRecipe(recipeKey, ItemStack(shulkerType))
-            recipe.addIngredient(Material.BOOK)
-            recipe.addIngredient(Material.BOOK)
-            Bukkit.addRecipe(recipe)
-        }
     }
 
     @EventHandler
     fun onPrepareCraft(event: PrepareItemCraftEvent) {
-        val recipe = event.recipe ?: return
         val inventory = event.inventory
 
-        if (inventory.matrix.any { isSmartShulker(it) || isGarbageShulker(it) }) {
-            val shulkerType = inventory.matrix.firstOrNull { isShulkerBox(it?.type) }?.type ?: return
-            event.inventory.result = ItemStack(shulkerType)
+        if (inventory.matrix.size == 1 && inventory.matrix[0]?.let { isSmartShulker(it) || isGarbageShulker(it) } == true) {
+            val shulker = inventory.matrix[0]!!
+            val normalShulker = ItemStack(shulker.type)
+            (shulker.itemMeta as? BlockStateMeta)?.blockState?.let {
+                (normalShulker.itemMeta as? BlockStateMeta)?.blockState = it
+            }
+            event.inventory.result = normalShulker
             return
         }
 
+        val recipe = event.recipe ?: return
         when {
             isShulkerBox(recipe.result?.type) -> {
                 if (isSmartShulker(inventory.result) &&
