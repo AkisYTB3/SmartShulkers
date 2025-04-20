@@ -5,13 +5,13 @@ sounds:
 messages:
   pickup: "<green>Picked up <amount> <item>!"
 permissions:
-  craft_autoshulker: "smartshulkers.craft.autoshulker"
+  craft_smartshulker: "smartshulkers.craft.smartshulker"
   craft_garbageshulker: "smartshulkers.craft.garbageshulker"
-  modify_autoshulker: "smartshulkers.modify.autoshulker"
+  modify_smartshulker: "smartshulkers.modify.smartshulker"
   modify_garbageshulker: "smartshulkers.modify.garbageshulker"
 settings:
-  autoshulker:
-    name: "<gradient:gold:yellow>AutoShulker</gradient>"
+  smartshulker:
+    name: "<gradient:gold:yellow>SmartShulker</gradient>"
     enabled: true
   garbageshulker:
     name: "<gradient:red:dark_red>Garbage Shulker</gradient>"
