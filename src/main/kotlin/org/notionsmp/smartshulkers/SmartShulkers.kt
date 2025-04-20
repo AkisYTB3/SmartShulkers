@@ -12,7 +12,7 @@ import org.bukkit.event.entity.EntityPickupItemEvent
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.PrepareItemCraftEvent
 import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.ShapedRecipe
+import org.bukkit.inventory.ShapelessRecipe
 import org.bukkit.inventory.meta.BlockStateMeta
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.plugin.java.JavaPlugin
@@ -22,6 +22,26 @@ class SmartShulkers : JavaPlugin(), Listener {
     companion object {
         lateinit var instance: SmartShulkers
             private set
+
+        private val SHULKER_BOX_TYPES = setOf(
+            Material.SHULKER_BOX,
+            Material.WHITE_SHULKER_BOX,
+            Material.ORANGE_SHULKER_BOX,
+            Material.MAGENTA_SHULKER_BOX,
+            Material.LIGHT_BLUE_SHULKER_BOX,
+            Material.YELLOW_SHULKER_BOX,
+            Material.LIME_SHULKER_BOX,
+            Material.PINK_SHULKER_BOX,
+            Material.GRAY_SHULKER_BOX,
+            Material.LIGHT_GRAY_SHULKER_BOX,
+            Material.CYAN_SHULKER_BOX,
+            Material.PURPLE_SHULKER_BOX,
+            Material.BLUE_SHULKER_BOX,
+            Material.BROWN_SHULKER_BOX,
+            Material.GREEN_SHULKER_BOX,
+            Material.RED_SHULKER_BOX,
+            Material.BLACK_SHULKER_BOX
+        )
     }
 
     private val PICKUP_SOUND = "sounds.pickup"
@@ -96,35 +116,57 @@ class SmartShulkers : JavaPlugin(), Listener {
     private fun isSmartShulkerEnabled() = config.getBoolean("$SETTINGS_AUTO.enabled", true)
     private fun isGarbageShulkerEnabled() = config.getBoolean("$SETTINGS_GARBAGE.enabled", true)
 
+    private fun isShulkerBox(material: Material?): Boolean {
+        return material in SHULKER_BOX_TYPES
+    }
+
     private fun registerRecipes() {
         if (isSmartShulkerEnabled()) {
-            ShapedRecipe(smartShulkerKey, createSmartShulker(emptyList())).apply {
-                shape("B", "S")
-                setIngredient('B', Material.BOOK)
-                setIngredient('S', Material.SHULKER_BOX)
-                Bukkit.addRecipe(this)
+            SHULKER_BOX_TYPES.forEach { shulkerType ->
+                val recipeKey = NamespacedKey(this, "smartshulker_${shulkerType.name.lowercase()}")
+                val recipe = ShapelessRecipe(recipeKey, createSmartShulker(ItemStack(shulkerType), emptyList()))
+                recipe.addIngredient(Material.BOOK)
+                recipe.addIngredient(shulkerType)
+                Bukkit.addRecipe(recipe)
             }
         }
         if (isGarbageShulkerEnabled()) {
-            ShapedRecipe(garbageShulkerKey, createGarbageShulker(emptyList())).apply {
-                shape("L", "S")
-                setIngredient('L', Material.LAVA_BUCKET)
-                setIngredient('S', Material.SHULKER_BOX)
-                Bukkit.addRecipe(this)
+            SHULKER_BOX_TYPES.forEach { shulkerType ->
+                val recipeKey = NamespacedKey(this, "garbageshulker_${shulkerType.name.lowercase()}")
+                val recipe = ShapelessRecipe(recipeKey, createGarbageShulker(ItemStack(shulkerType), emptyList()))
+                recipe.addIngredient(Material.LAVA_BUCKET)
+                recipe.addIngredient(shulkerType)
+                Bukkit.addRecipe(recipe)
             }
+        }
+
+        SHULKER_BOX_TYPES.forEach { shulkerType ->
+            val recipeKey = NamespacedKey(this, "uncraft_smartshulker_${shulkerType.name.lowercase()}")
+            val recipe = ShapelessRecipe(recipeKey, ItemStack(shulkerType))
+            recipe.addIngredient(Material.BOOK)
+            recipe.addIngredient(Material.BOOK)
+            Bukkit.addRecipe(recipe)
         }
     }
 
     @EventHandler
     fun onPrepareCraft(event: PrepareItemCraftEvent) {
         val recipe = event.recipe ?: return
+        val inventory = event.inventory
+
+        if (inventory.matrix.any { isSmartShulker(it) || isGarbageShulker(it) }) {
+            val shulkerType = inventory.matrix.firstOrNull { isShulkerBox(it?.type) }?.type ?: return
+            event.inventory.result = ItemStack(shulkerType)
+            return
+        }
+
         when {
-            recipe.result?.type == Material.SHULKER_BOX -> {
-                if (isSmartShulker(event.inventory.result) &&
+            isShulkerBox(recipe.result?.type) -> {
+                if (isSmartShulker(inventory.result) &&
                     !event.view.player.hasPermission(config.getString(PERM_CRAFT_AUTO)!!)) {
                     event.inventory.result = null
                 }
-                if (isGarbageShulker(event.inventory.result) &&
+                if (isGarbageShulker(inventory.result) &&
                     !event.view.player.hasPermission(config.getString(PERM_CRAFT_GARBAGE)!!)) {
                     event.inventory.result = null
                 }
@@ -173,7 +215,7 @@ class SmartShulkers : JavaPlugin(), Listener {
         if (event.block.state !is ShulkerBox) return
         val shulkerBox = event.block.state as ShulkerBox
         val contents = shulkerBox.inventory.contents
-        val meta = Bukkit.getItemFactory().getItemMeta(Material.SHULKER_BOX) as? BlockStateMeta ?: return
+        val meta = Bukkit.getItemFactory().getItemMeta(event.block.type) as? BlockStateMeta ?: return
         meta.blockState = shulkerBox
         val isAuto = meta.persistentDataContainer.has(smartShulkerKey)
         val isGarbage = meta.persistentDataContainer.has(garbageShulkerKey)
@@ -183,7 +225,8 @@ class SmartShulkers : JavaPlugin(), Listener {
                 ?.split(",")
                 ?.mapNotNull { runCatching { Material.valueOf(it) }.getOrNull() }
                 ?: emptyList()
-            val newShulker = if (isAuto) createSmartShulker(items) else createGarbageShulker(items)
+            val newShulker = if (isAuto) createSmartShulker(ItemStack(event.block.type), items)
+            else createGarbageShulker(ItemStack(event.block.type), items)
             val newMeta = newShulker.itemMeta as BlockStateMeta
             val newShulkerBox = newMeta.blockState as ShulkerBox
             contents.forEachIndexed { index, item ->
@@ -218,10 +261,9 @@ class SmartShulkers : JavaPlugin(), Listener {
         val newItems = currentItems.toMutableList().apply {
             if (contains(cursor.type)) remove(cursor.type) else add(cursor.type)
         }
-        event.currentItem = createShulker(
+        event.currentItem = createShulker(clicked,
             if (isSmartShulker(clicked)) smartShulkerKey else garbageShulkerKey,
-            newItems
-        )
+            newItems)
         event.isCancelled = true
     }
 
@@ -283,12 +325,12 @@ class SmartShulkers : JavaPlugin(), Listener {
     }
 
     private fun isSmartShulker(item: ItemStack?): Boolean {
-        if (item?.type != Material.SHULKER_BOX) return false
+        if (item == null || !isShulkerBox(item.type)) return false
         return item.itemMeta?.persistentDataContainer?.has(smartShulkerKey) == true
     }
 
     private fun isGarbageShulker(item: ItemStack?): Boolean {
-        if (item?.type != Material.SHULKER_BOX) return false
+        if (item == null || !isShulkerBox(item.type)) return false
         return item.itemMeta?.persistentDataContainer?.has(garbageShulkerKey) == true
     }
 
@@ -306,8 +348,8 @@ class SmartShulkers : JavaPlugin(), Listener {
             ?: emptyList()
     }
 
-    private fun createShulker(typeKey: NamespacedKey, items: List<Material>): ItemStack {
-        return ItemStack(Material.SHULKER_BOX).apply {
+    private fun createShulker(baseItem: ItemStack, typeKey: NamespacedKey, items: List<Material>): ItemStack {
+        return ItemStack(baseItem.type).apply {
             itemMeta = (itemMeta as? BlockStateMeta)?.apply {
                 persistentDataContainer.set(typeKey, PersistentDataType.BYTE, 1)
                 persistentDataContainer.set(itemsKey, PersistentDataType.STRING, items.joinToString(",") { it.name })
@@ -335,11 +377,14 @@ class SmartShulkers : JavaPlugin(), Listener {
                         }
                     }
                 })
-                blockState = blockState
+                blockState = (baseItem.itemMeta as? BlockStateMeta)?.blockState ?: blockState
             }
         }
     }
 
-    private fun createSmartShulker(items: List<Material>) = createShulker(smartShulkerKey, items)
-    private fun createGarbageShulker(items: List<Material>) = createShulker(garbageShulkerKey, items)
+    private fun createSmartShulker(baseItem: ItemStack, items: List<Material>) =
+        createShulker(baseItem, smartShulkerKey, items)
+
+    private fun createGarbageShulker(baseItem: ItemStack, items: List<Material>) =
+        createShulker(baseItem, garbageShulkerKey, items)
 }
