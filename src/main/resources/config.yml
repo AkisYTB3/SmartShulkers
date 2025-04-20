@@ -3,7 +3,9 @@ sounds:
   pickup: "entity.item.pickup"
   garbage: "block.lava.extinguish"
 messages:
+  type: CHAT # Valid options: CHAT, ACTIONBAR
   pickup: "<green>Picked up <amount> <item>!"
+  garbage: "<red>Deleted <amount> <item>!"
 permissions:
   craft_smartshulker: "smartshulkers.craft.smartshulker"
   craft_garbageshulker: "smartshulkers.craft.garbageshulker"

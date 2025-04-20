@@ -26,7 +26,9 @@ class SmartShulkers : JavaPlugin(), Listener {
 
     private val PICKUP_SOUND = "sounds.pickup"
     private val GARBAGE_SOUND = "sounds.garbage"
+    private val MESSAGE_TYPE = "messages.type"
     private val PICKUP_MESSAGE = "messages.pickup"
+    private val GARBAGE_MESSAGE = "messages.garbage"
     private val PERM_CRAFT_AUTO = "permissions.craft_smartshulker"
     private val PERM_CRAFT_GARBAGE = "permissions.craft_garbageshulker"
     private val PERM_MODIFY_AUTO = "permissions.modify_smartshulker"
@@ -37,7 +39,9 @@ class SmartShulkers : JavaPlugin(), Listener {
     private val defaultConfig = mapOf(
         PICKUP_SOUND to "entity.item.pickup",
         GARBAGE_SOUND to "block.lava.extinguish",
+        MESSAGE_TYPE to "ACTIONBAR",
         PICKUP_MESSAGE to "<green>Picked up <amount> <item>!",
+        GARBAGE_MESSAGE to "<red>Deleted <amount> <item>!",
         PERM_CRAFT_AUTO to "smartshulkers.craft.smartshulker",
         PERM_CRAFT_GARBAGE to "smartshulkers.craft.garbageshulker",
         PERM_MODIFY_AUTO to "smartshulkers.modify.smartshulker",
@@ -139,12 +143,22 @@ class SmartShulkers : JavaPlugin(), Listener {
             .joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } }
     }
 
-    private fun sendPickupMessage(player: Player, item: ItemStack) {
-        val rawMessage = config.getString(PICKUP_MESSAGE) ?: return
+    private fun sendMessage(player: Player, item: ItemStack, isPickup: Boolean) {
+        val messageType = config.getString(MESSAGE_TYPE) ?: "ACTIONBAR"
+        val rawMessage = if (isPickup) {
+            config.getString(PICKUP_MESSAGE) ?: return
+        } else {
+            config.getString(GARBAGE_MESSAGE) ?: return
+        }
+
         val message = rawMessage
             .replace("<amount>", item.amount.toString())
             .replace("<item>", getItemName(item.type))
-        player.sendActionBar(mm.deserialize(message))
+
+        when (messageType.uppercase()) {
+            "CHAT" -> player.sendMessage(mm.deserialize(message))
+            else -> player.sendActionBar(mm.deserialize(message))
+        }
     }
 
     @EventHandler
@@ -243,7 +257,7 @@ class SmartShulkers : JavaPlugin(), Listener {
                     shulker.itemMeta = meta
                     player.inventory.setItem(index, shulker)
                     playPickupSound(player)
-                    sendPickupMessage(player, item)
+                    sendMessage(player, item, true)
                     event.isCancelled = true
                     event.item.remove()
                 }
@@ -257,6 +271,7 @@ class SmartShulkers : JavaPlugin(), Listener {
         item: ItemStack
     ) {
         playGarbageSound(player)
+        sendMessage(player, item, false)
         event.isCancelled = true
         event.item.remove()
     }
