@@ -3,7 +3,7 @@ sounds:
   pickup: "entity.item.pickup"
   garbage: "block.lava.extinguish"
 messages:
-  type: CHAT # Valid options: CHAT, ACTIONBAR
+  type: CHAT # Valid ones should be CHAT, ACTIONBAR
   pickup: "<green>Picked up <amount> <item>!"
   garbage: "<red>Deleted <amount> <item>!"
 permissions:
@@ -15,6 +15,14 @@ settings:
   smartshulker:
     name: "<gradient:gold:yellow>SmartShulker</gradient>"
     enabled: true
+    lore:
+      accepts: "<gray>Accepts:"
+      itemnames: "<dark_gray>- <item>"
+      empty: "<dark_gray>- None"
   garbageshulker:
     name: "<gradient:red:dark_red>Garbage Shulker</gradient>"
     enabled: true
+    lore:
+      accepts: "<gray>Destroys:"
+      itemnames: "<dark_gray>- <item>"
+      empty: "<dark_gray>- None"

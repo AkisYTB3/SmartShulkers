@@ -48,8 +48,14 @@ class SmartShulkers : JavaPlugin(), Listener {
         PERM_MODIFY_GARBAGE to "smartshulkers.modify.garbageshulker",
         "$SETTINGS_AUTO.enabled" to true,
         "$SETTINGS_AUTO.name" to "<gradient:gold:yellow>Smart Shulker</gradient>",
+        "$SETTINGS_AUTO.lore.accepts" to "<gray>Accepts:",
+        "$SETTINGS_AUTO.lore.itemnames" to "<dark_gray>- <item>",
+        "$SETTINGS_AUTO.lore.empty" to "<dark_gray>- None",
         "$SETTINGS_GARBAGE.enabled" to true,
-        "$SETTINGS_GARBAGE.name" to "<gradient:red:dark_red>Garbage Shulker</gradient>"
+        "$SETTINGS_GARBAGE.name" to "<gradient:red:dark_red>Garbage Shulker</gradient>",
+        "$SETTINGS_GARBAGE.lore.accepts" to "<gray>Destroys:",
+        "$SETTINGS_GARBAGE.lore.itemnames" to "<dark_gray>- <item>",
+        "$SETTINGS_GARBAGE.lore.empty" to "<dark_gray>- None"
     )
 
     lateinit var smartShulkerKey: NamespacedKey
@@ -310,9 +316,24 @@ class SmartShulkers : JavaPlugin(), Listener {
                     else config.getString("$SETTINGS_GARBAGE.name")!!
                 ))
                 lore(buildList {
-                    add(mm.deserialize("<gray>Accepts:"))
-                    if (items.isEmpty()) add(mm.deserialize("<dark_gray>- None"))
-                    else items.forEach { add(mm.deserialize("<dark_gray>- ${getItemName(it)}")) }
+                    add(mm.deserialize(
+                        if (typeKey == smartShulkerKey) config.getString("$SETTINGS_AUTO.lore.accepts")!!
+                        else config.getString("$SETTINGS_GARBAGE.lore.accepts")!!
+                    ))
+                    if (items.isEmpty()) {
+                        add(mm.deserialize(
+                            if (typeKey == smartShulkerKey) config.getString("$SETTINGS_AUTO.lore.empty")!!
+                            else config.getString("$SETTINGS_GARBAGE.lore.empty")!!
+                        ))
+                    } else {
+                        items.forEach {
+                            add(mm.deserialize(
+                                (if (typeKey == smartShulkerKey) config.getString("$SETTINGS_AUTO.lore.itemnames")!!
+                                else config.getString("$SETTINGS_GARBAGE.lore.itemnames")!!)
+                                    .replace("<item>", getItemName(it))
+                            ))
+                        }
+                    }
                 })
                 blockState = blockState
             }
