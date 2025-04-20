@@ -27,28 +27,28 @@ class SmartShulkers : JavaPlugin(), Listener {
     private val PICKUP_SOUND = "sounds.pickup"
     private val GARBAGE_SOUND = "sounds.garbage"
     private val PICKUP_MESSAGE = "messages.pickup"
-    private val PERM_CRAFT_AUTO = "permissions.craft_autoshulker"
+    private val PERM_CRAFT_AUTO = "permissions.craft_smartshulker"
     private val PERM_CRAFT_GARBAGE = "permissions.craft_garbageshulker"
-    private val PERM_MODIFY_AUTO = "permissions.modify_autoshulker"
+    private val PERM_MODIFY_AUTO = "permissions.modify_smartshulker"
     private val PERM_MODIFY_GARBAGE = "permissions.modify_garbageshulker"
-    private val SETTINGS_AUTO = "settings.autoshulker"
+    private val SETTINGS_AUTO = "settings.smartshulker"
     private val SETTINGS_GARBAGE = "settings.garbageshulker"
 
     private val defaultConfig = mapOf(
         PICKUP_SOUND to "entity.item.pickup",
         GARBAGE_SOUND to "block.lava.extinguish",
         PICKUP_MESSAGE to "<green>Picked up <amount> <item>!",
-        PERM_CRAFT_AUTO to "autoshulker.craft.autoshulker",
-        PERM_CRAFT_GARBAGE to "autoshulker.craft.garbageshulker",
-        PERM_MODIFY_AUTO to "autoshulker.modify.autoshulker",
-        PERM_MODIFY_GARBAGE to "autoshulker.modify.garbageshulker",
+        PERM_CRAFT_AUTO to "smartshulkers.craft.smartshulker",
+        PERM_CRAFT_GARBAGE to "smartshulkers.craft.garbageshulker",
+        PERM_MODIFY_AUTO to "smartshulkers.modify.smartshulker",
+        PERM_MODIFY_GARBAGE to "smartshulkers.modify.garbageshulker",
         "$SETTINGS_AUTO.enabled" to true,
-        "$SETTINGS_AUTO.name" to "<gradient:gold:yellow>AutoShulker</gradient>",
+        "$SETTINGS_AUTO.name" to "<gradient:gold:yellow>Smart Shulker</gradient>",
         "$SETTINGS_GARBAGE.enabled" to true,
         "$SETTINGS_GARBAGE.name" to "<gradient:red:dark_red>Garbage Shulker</gradient>"
     )
 
-    lateinit var autoShulkerKey: NamespacedKey
+    lateinit var smartShulkerKey: NamespacedKey
     lateinit var garbageShulkerKey: NamespacedKey
     lateinit var itemsKey: NamespacedKey
     lateinit var commandManager: PaperCommandManager
@@ -56,21 +56,14 @@ class SmartShulkers : JavaPlugin(), Listener {
 
     override fun onEnable() {
         instance = this
-        setupConfig()
+        saveDefaultConfig()
         initializeKeys()
         registerManagers()
         registerRecipes()
     }
 
-    private fun setupConfig() {
-        defaultConfig.forEach { (key, value) ->
-            if (!config.contains(key)) config.set(key, value)
-        }
-        saveConfig()
-    }
-
     private fun initializeKeys() {
-        autoShulkerKey = NamespacedKey(this, "autoshulker")
+        smartShulkerKey = NamespacedKey(this, "smartshulker")
         garbageShulkerKey = NamespacedKey(this, "garbageshulker")
         itemsKey = NamespacedKey(this, "shulkeritems")
     }
@@ -84,18 +77,18 @@ class SmartShulkers : JavaPlugin(), Listener {
 
     fun reload() {
         reloadConfig()
-        Bukkit.removeRecipe(autoShulkerKey)
+        Bukkit.removeRecipe(smartShulkerKey)
         Bukkit.removeRecipe(garbageShulkerKey)
-        if (isAutoShulkerEnabled()) registerRecipes()
+        if (isSmartShulkerEnabled()) registerRecipes()
         Bukkit.getConsoleSender().sendMessage(mm.deserialize("<green>SmartShulkers config reloaded!"))
     }
 
-    private fun isAutoShulkerEnabled() = config.getBoolean("$SETTINGS_AUTO.enabled", true)
+    private fun isSmartShulkerEnabled() = config.getBoolean("$SETTINGS_AUTO.enabled", true)
     private fun isGarbageShulkerEnabled() = config.getBoolean("$SETTINGS_GARBAGE.enabled", true)
 
     private fun registerRecipes() {
-        if (isAutoShulkerEnabled()) {
-            ShapedRecipe(autoShulkerKey, createAutoShulker(emptyList())).apply {
+        if (isSmartShulkerEnabled()) {
+            ShapedRecipe(smartShulkerKey, createSmartShulker(emptyList())).apply {
                 shape("B", "S")
                 setIngredient('B', Material.BOOK)
                 setIngredient('S', Material.SHULKER_BOX)
@@ -117,7 +110,7 @@ class SmartShulkers : JavaPlugin(), Listener {
         val recipe = event.recipe ?: return
         when {
             recipe.result?.type == Material.SHULKER_BOX -> {
-                if (isAutoShulker(event.inventory.result) &&
+                if (isSmartShulker(event.inventory.result) &&
                     !event.view.player.hasPermission(config.getString(PERM_CRAFT_AUTO)!!)) {
                     event.inventory.result = null
                 }
@@ -156,13 +149,13 @@ class SmartShulkers : JavaPlugin(), Listener {
 
     @EventHandler
     fun onBlockBreak(event: BlockBreakEvent) {
-        if (!isAutoShulkerEnabled() && !isGarbageShulkerEnabled()) return
+        if (!isSmartShulkerEnabled() && !isGarbageShulkerEnabled()) return
         if (event.block.state !is ShulkerBox) return
         val shulkerBox = event.block.state as ShulkerBox
         val contents = shulkerBox.inventory.contents
         val meta = Bukkit.getItemFactory().getItemMeta(Material.SHULKER_BOX) as? BlockStateMeta ?: return
         meta.blockState = shulkerBox
-        val isAuto = meta.persistentDataContainer.has(autoShulkerKey)
+        val isAuto = meta.persistentDataContainer.has(smartShulkerKey)
         val isGarbage = meta.persistentDataContainer.has(garbageShulkerKey)
         if (isAuto || isGarbage) {
             event.isDropItems = false
@@ -170,7 +163,7 @@ class SmartShulkers : JavaPlugin(), Listener {
                 ?.split(",")
                 ?.mapNotNull { runCatching { Material.valueOf(it) }.getOrNull() }
                 ?: emptyList()
-            val newShulker = if (isAuto) createAutoShulker(items) else createGarbageShulker(items)
+            val newShulker = if (isAuto) createSmartShulker(items) else createGarbageShulker(items)
             val newMeta = newShulker.itemMeta as BlockStateMeta
             val newShulkerBox = newMeta.blockState as ShulkerBox
             contents.forEachIndexed { index, item ->
@@ -186,12 +179,12 @@ class SmartShulkers : JavaPlugin(), Listener {
 
     @EventHandler
     fun onInventoryClick(event: InventoryClickEvent) {
-        if (!isAutoShulkerEnabled() && !isGarbageShulkerEnabled()) return
+        if (!isSmartShulkerEnabled() && !isGarbageShulkerEnabled()) return
         val cursor = event.cursor ?: return
         if (cursor.type == Material.AIR) return
         val clicked = event.currentItem ?: return
 
-        if (isAutoShulker(clicked) && !event.whoClicked.hasPermission(config.getString(PERM_MODIFY_AUTO)!!)) {
+        if (isSmartShulker(clicked) && !event.whoClicked.hasPermission(config.getString(PERM_MODIFY_AUTO)!!)) {
             event.isCancelled = true
             return
         }
@@ -200,13 +193,13 @@ class SmartShulkers : JavaPlugin(), Listener {
             return
         }
 
-        if (!isAutoShulker(clicked) && !isGarbageShulker(clicked)) return
+        if (!isSmartShulker(clicked) && !isGarbageShulker(clicked)) return
         val currentItems = getShulkerItems(clicked)
         val newItems = currentItems.toMutableList().apply {
             if (contains(cursor.type)) remove(cursor.type) else add(cursor.type)
         }
         event.currentItem = createShulker(
-            if (isAutoShulker(clicked)) autoShulkerKey else garbageShulkerKey,
+            if (isSmartShulker(clicked)) smartShulkerKey else garbageShulkerKey,
             newItems
         )
         event.isCancelled = true
@@ -214,15 +207,15 @@ class SmartShulkers : JavaPlugin(), Listener {
 
     @EventHandler
     fun onItemPickup(event: EntityPickupItemEvent) {
-        if (!isAutoShulkerEnabled() && !isGarbageShulkerEnabled()) return
+        if (!isSmartShulkerEnabled() && !isGarbageShulkerEnabled()) return
         if (event.entity !is Player) return
         val player = event.entity as Player
         val item = event.item.itemStack
         player.inventory.contents.forEachIndexed { index, inventoryItem ->
             if (inventoryItem == null) return@forEachIndexed
             when {
-                isAutoShulker(inventoryItem) && getShulkerItems(inventoryItem).contains(item.type) -> {
-                    if (!isAutoShulkerEnabled()) return
+                isSmartShulker(inventoryItem) && getShulkerItems(inventoryItem).contains(item.type) -> {
+                    if (!isSmartShulkerEnabled()) return
                     handleAutoPickup(event, player, index, inventoryItem, item)
                     return
                 }
@@ -268,9 +261,9 @@ class SmartShulkers : JavaPlugin(), Listener {
         event.item.remove()
     }
 
-    private fun isAutoShulker(item: ItemStack?): Boolean {
+    private fun isSmartShulker(item: ItemStack?): Boolean {
         if (item?.type != Material.SHULKER_BOX) return false
-        return item.itemMeta?.persistentDataContainer?.has(autoShulkerKey) == true
+        return item.itemMeta?.persistentDataContainer?.has(smartShulkerKey) == true
     }
 
     private fun isGarbageShulker(item: ItemStack?): Boolean {
@@ -298,7 +291,7 @@ class SmartShulkers : JavaPlugin(), Listener {
                 persistentDataContainer.set(typeKey, PersistentDataType.BYTE, 1)
                 persistentDataContainer.set(itemsKey, PersistentDataType.STRING, items.joinToString(",") { it.name })
                 displayName(mm.deserialize(
-                    if (typeKey == autoShulkerKey) config.getString("$SETTINGS_AUTO.name")!!
+                    if (typeKey == smartShulkerKey) config.getString("$SETTINGS_AUTO.name")!!
                     else config.getString("$SETTINGS_GARBAGE.name")!!
                 ))
                 lore(buildList {
@@ -311,6 +304,6 @@ class SmartShulkers : JavaPlugin(), Listener {
         }
     }
 
-    private fun createAutoShulker(items: List<Material>) = createShulker(autoShulkerKey, items)
+    private fun createSmartShulker(items: List<Material>) = createShulker(smartShulkerKey, items)
     private fun createGarbageShulker(items: List<Material>) = createShulker(garbageShulkerKey, items)
 }
