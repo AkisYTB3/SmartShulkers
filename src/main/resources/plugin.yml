@@ -4,3 +4,4 @@ main: org.notionsmp.smartshulkers.SmartShulkers
 api-version: '1.21'
 load: STARTUP
 author: "Akis (discord: yeahakis)"
+softdepend: [Vault]
