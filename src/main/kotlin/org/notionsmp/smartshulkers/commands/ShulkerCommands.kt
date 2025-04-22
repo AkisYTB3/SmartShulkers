@@ -14,7 +14,7 @@ import org.notionsmp.smartshulkers.utils.ShulkerManager
 class ShulkerCommands(private val plugin: SmartShulkers) : BaseCommand() {
     private val mm = MiniMessage.miniMessage()
 
-    @Subcommand("reload")
+    @Subcommand("reload|rl")
     @CommandPermission("smartshulkers.reload")
     fun onReload(player: Player) {
         plugin.reload()
