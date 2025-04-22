@@ -11,6 +11,7 @@ import org.bukkit.inventory.meta.BlockStateMeta
 import org.notionsmp.smartshulkers.SmartShulkers
 import org.notionsmp.smartshulkers.SoundManager
 import org.notionsmp.smartshulkers.utils.ShulkerManager
+import org.bukkit.Material
 
 class SellListener(private val plugin: SmartShulkers) : Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -110,23 +111,44 @@ class SellListener(private val plugin: SmartShulkers) : Listener {
 
     private fun sellContents(player: Player, shulkerBox: ShulkerBox) {
         val contents = shulkerBox.inventory.contents
-        var totalEarned = 0.0
+        val itemMap = mutableMapOf<Material, Pair<Int, Double>>()
 
         contents.forEachIndexed { index, item ->
             if (item != null) {
                 val price = plugin.configManager.getPrice(item.type.name)
                 if (price > 0.0) {
-                    val itemValue = price * item.amount
-                    plugin.economy?.depositPlayer(player, itemValue)
-                    totalEarned += itemValue
-                    sendShulkerMessage(player, "sellshulker", item, itemValue)
+                    val current = itemMap[item.type] ?: Pair(0, 0.0)
+                    itemMap[item.type] = Pair(current.first + item.amount, current.second + (price * item.amount))
                     shulkerBox.inventory.setItem(index, null)
                 }
             }
         }
 
+        var totalEarned = 0.0
+        itemMap.forEach { (material, amountAndPrice) ->
+            val (amount, price) = amountAndPrice
+            totalEarned += price
+            sendCombinedShulkerMessage(player, "sellshulker", material, amount, price)
+        }
+
         if (totalEarned > 0.0) {
             SoundManager.playSound(player, "sounds.sell")
+        }
+    }
+
+    private fun sendCombinedShulkerMessage(player: Player, shulkerType: String, material: Material, amount: Int, price: Double) {
+        val settingsPath = "settings.$shulkerType.message"
+        if (!plugin.config.getBoolean("$settingsPath.enabled", true)) return
+
+        val message = plugin.config.getString("$settingsPath.sell")
+            ?.replace("<amount>", amount.toString())
+            ?.replace("<item>", ShulkerManager.getItemName(material))
+            ?.replace("<price>", "%.2f".format(price))
+            ?: return
+
+        when (plugin.config.getString("$settingsPath.type")?.uppercase() ?: "ACTIONBAR") {
+            "CHAT" -> player.sendMessage(plugin.mm.deserialize(message))
+            "ACTIONBAR" -> player.sendActionBar(plugin.mm.deserialize(message))
         }
     }
 
