@@ -7,7 +7,6 @@ import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityPickupItemEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.BlockStateMeta
-import org.notionsmp.smartshulkers.MessageManager
 import org.notionsmp.smartshulkers.SmartShulkers
 import org.notionsmp.smartshulkers.SoundManager
 import org.notionsmp.smartshulkers.utils.ShulkerManager
@@ -41,7 +40,12 @@ class SellListener(private val plugin: SmartShulkers) : Listener {
         item: ItemStack
     ) {
         val price = plugin.configManager.getPrice(item.type.name)
-        if (price <= 0.0) return
+        if (price <= 0.0) {
+            SoundManager.playSound(player, "sounds.error")
+            sendShulkerMessage(player, "sellshulker", item, price, true)
+            event.isCancelled = true
+            return
+        }
 
         val meta = shulker.itemMeta as? BlockStateMeta ?: return
         val shulkerBox = meta.blockState as? ShulkerBox ?: return
@@ -51,10 +55,7 @@ class SellListener(private val plugin: SmartShulkers) : Listener {
             "INSTA" -> {
                 val itemValue = price * item.amount
                 plugin.economy?.depositPlayer(player, itemValue)
-                MessageManager.sendMessage(player, "messages.sell",
-                    "amount" to item.amount.toString(),
-                    "item" to ShulkerManager.getItemName(item.type),
-                    "price" to String.format("%.2f", itemValue))
+                sendShulkerMessage(player, "sellshulker", item, itemValue)
                 SoundManager.playSound(player, "sounds.sell")
                 event.isCancelled = true
                 event.item.remove()
@@ -116,10 +117,7 @@ class SellListener(private val plugin: SmartShulkers) : Listener {
                     val itemValue = price * item.amount
                     plugin.economy?.depositPlayer(player, itemValue)
                     totalEarned += itemValue
-                    MessageManager.sendMessage(player, "messages.sell",
-                        "amount" to item.amount.toString(),
-                        "item" to ShulkerManager.getItemName(item.type),
-                        "price" to String.format("%.2f", itemValue))
+                    sendShulkerMessage(player, "sellshulker", item, itemValue)
                     shulkerBox.inventory.setItem(index, null)
                 }
             }
@@ -127,6 +125,24 @@ class SellListener(private val plugin: SmartShulkers) : Listener {
 
         if (totalEarned > 0.0) {
             SoundManager.playSound(player, "sounds.sell")
+        }
+    }
+
+    private fun sendShulkerMessage(player: Player, shulkerType: String, item: ItemStack, price: Double = 0.0, isError: Boolean = false) {
+        val settingsPath = "settings.$shulkerType.message"
+        if (!plugin.config.getBoolean("$settingsPath.enabled", true)) return
+
+        val message = when {
+            isError -> plugin.config.getString("$settingsPath.error")
+            else -> plugin.config.getString("$settingsPath.sell")
+        }?.replace("<amount>", item.amount.toString())
+            ?.replace("<item>", ShulkerManager.getItemName(item.type))
+            ?.replace("<price>", "%.2f".format(price))
+            ?: return
+
+        when (plugin.config.getString("$settingsPath.type")?.uppercase() ?: "ACTIONBAR") {
+            "CHAT" -> player.sendMessage(plugin.mm.deserialize(message))
+            "ACTIONBAR" -> player.sendActionBar(plugin.mm.deserialize(message))
         }
     }
 }

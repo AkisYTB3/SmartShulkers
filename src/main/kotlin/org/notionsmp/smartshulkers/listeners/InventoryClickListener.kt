@@ -10,7 +10,6 @@ import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.BlockStateMeta
 import org.bukkit.persistence.PersistentDataType
-import org.notionsmp.smartshulkers.MessageManager
 import org.notionsmp.smartshulkers.SmartShulkers
 import org.notionsmp.smartshulkers.SoundManager
 import org.notionsmp.smartshulkers.utils.ShulkerManager
@@ -62,7 +61,7 @@ class InventoryClickListener(private val plugin: SmartShulkers) : Listener {
     private fun handleSellShulkerModification(event: InventoryClickEvent, clicked: ItemStack, cursor: ItemStack) {
         if (plugin.configManager.getPrice(cursor.type.name) <= 0.0) {
             SoundManager.playSound(event.whoClicked as Player, "sounds.error")
-            MessageManager.sendMessage(event.whoClicked as Player, "messages.error")
+            sendShulkerMessage(event.whoClicked as Player, "sellshulker", cursor, isError = true)
             event.isCancelled = true
             return
         }
@@ -70,9 +69,7 @@ class InventoryClickListener(private val plugin: SmartShulkers) : Listener {
     }
 
     private fun modifyShulker(event: InventoryClickEvent, shulker: ItemStack, item: ItemStack, typeKey: NamespacedKey) {
-
         val currentItems = ShulkerManager.getShulkerItems(shulker)
-
         val newItems = currentItems.toMutableList().apply {
             if (contains(item.type)) remove(item.type) else add(item.type)
         }
@@ -82,9 +79,7 @@ class InventoryClickListener(private val plugin: SmartShulkers) : Listener {
         val contents = shulkerBox?.inventory?.contents?.clone() ?: arrayOfNulls(27)
 
         val newShulker = shulker.clone().apply {
-
             itemMeta = (itemMeta as? BlockStateMeta)?.apply {
-
                 persistentDataContainer.set(
                     plugin.itemsKey,
                     PersistentDataType.STRING,
@@ -122,5 +117,21 @@ class InventoryClickListener(private val plugin: SmartShulkers) : Listener {
 
         event.currentItem = newShulker
         event.isCancelled = true
+    }
+
+    private fun sendShulkerMessage(player: Player, shulkerType: String, item: ItemStack, isError: Boolean = false) {
+        val settingsPath = "settings.$shulkerType.message"
+        if (!plugin.config.getBoolean("$settingsPath.enabled", true)) return
+
+        val message = if (isError) {
+            plugin.config.getString("$settingsPath.error")
+        } else {
+            null
+        } ?: return
+
+        when (plugin.config.getString("$settingsPath.type")?.uppercase() ?: "ACTIONBAR") {
+            "CHAT" -> player.sendMessage(plugin.mm.deserialize(message))
+            "ACTIONBAR" -> player.sendActionBar(plugin.mm.deserialize(message))
+        }
     }
 }

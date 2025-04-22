@@ -8,7 +8,6 @@ import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityPickupItemEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.BlockStateMeta
-import org.notionsmp.smartshulkers.MessageManager
 import org.notionsmp.smartshulkers.SmartShulkers
 import org.notionsmp.smartshulkers.SoundManager
 import org.notionsmp.smartshulkers.utils.ShulkerManager
@@ -47,9 +46,7 @@ class ItemPickupListener(private val plugin: SmartShulkers) : Listener {
                     shulker.itemMeta = meta
                     player.inventory.setItem(player.inventory.first(shulker), shulker)
                     SoundManager.playSound(player, "sounds.pickup")
-                    MessageManager.sendMessage(player, "messages.pickup",
-                        "amount" to item.amount.toString(),
-                        "item" to ShulkerManager.getItemName(item.type))
+                    sendShulkerMessage(player, "smartshulker", item)
                     event.isCancelled = true
                     event.item.remove()
                 }
@@ -59,10 +56,23 @@ class ItemPickupListener(private val plugin: SmartShulkers) : Listener {
 
     private fun handleGarbagePickup(event: EntityPickupItemEvent, player: Player, item: ItemStack) {
         SoundManager.playSound(player, "sounds.garbage")
-        MessageManager.sendMessage(player, "messages.garbage",
-            "amount" to item.amount.toString(),
-            "item" to ShulkerManager.getItemName(item.type))
+        sendShulkerMessage(player, "garbageshulker", item)
         event.isCancelled = true
         event.item.remove()
+    }
+
+    private fun sendShulkerMessage(player: Player, shulkerType: String, item: ItemStack) {
+        val settingsPath = "settings.$shulkerType.message"
+        if (!plugin.config.getBoolean("$settingsPath.enabled", true)) return
+
+        val message = plugin.config.getString("$settingsPath.contents")
+            ?.replace("<amount>", item.amount.toString())
+            ?.replace("<item>", ShulkerManager.getItemName(item.type))
+            ?: return
+
+        when (plugin.config.getString("$settingsPath.type")?.uppercase() ?: "ACTIONBAR") {
+            "CHAT" -> player.sendMessage(plugin.mm.deserialize(message))
+            "ACTIONBAR" -> player.sendActionBar(plugin.mm.deserialize(message))
+        }
     }
 }
