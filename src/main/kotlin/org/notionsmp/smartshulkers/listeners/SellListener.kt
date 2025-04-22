@@ -13,7 +13,7 @@ import org.notionsmp.smartshulkers.SoundManager
 import org.notionsmp.smartshulkers.utils.ShulkerManager
 
 class SellListener(private val plugin: SmartShulkers) : Listener {
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.HIGH)
     fun onItemPickup(event: EntityPickupItemEvent) {
         if (event.isCancelled) return
         if (plugin.economy == null) return

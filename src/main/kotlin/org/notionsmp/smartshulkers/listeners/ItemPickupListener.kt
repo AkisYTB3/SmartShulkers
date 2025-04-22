@@ -14,7 +14,7 @@ import org.notionsmp.smartshulkers.SoundManager
 import org.notionsmp.smartshulkers.utils.ShulkerManager
 
 class ItemPickupListener(private val plugin: SmartShulkers) : Listener {
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.NORMAL)
     fun onItemPickup(event: EntityPickupItemEvent) {
         if (event.isCancelled) return
         if (event.entity !is Player) return
