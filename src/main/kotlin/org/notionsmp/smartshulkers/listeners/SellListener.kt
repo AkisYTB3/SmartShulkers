@@ -62,11 +62,27 @@ class SellListener(private val plugin: SmartShulkers) : Listener {
             }
 
             else -> {
-                val remaining = shulkerBox.inventory.addItem(item)
-                if (remaining.isEmpty()) {
-                    meta.blockState = shulkerBox
-                    shulker.itemMeta = meta
-                    player.inventory.setItem(inventoryIndex, shulker)
+                val originalAmount = item.amount
+                val clone = item.clone()
+                val remaining = shulkerBox.inventory.addItem(clone)
+
+                meta.blockState = shulkerBox
+                shulker.itemMeta = meta
+                player.inventory.setItem(inventoryIndex, shulker)
+
+                val remainingAmount = remaining.values.sumOf { it.amount }
+                val acceptedAmount = originalAmount - remainingAmount
+
+                if (acceptedAmount > 0) {
+                    if (remainingAmount == 0) {
+                        event.isCancelled = true
+                        event.item.remove()
+                    } else {
+                        event.item.itemStack.amount = remainingAmount
+                        event.isCancelled = true
+                    }
+
+                    SoundManager.playSound(player, "sounds.pickup")
 
                     if (shouldSellNow(shulkerBox, sellWhen)) {
                         sellContents(player, shulkerBox)
@@ -74,10 +90,6 @@ class SellListener(private val plugin: SmartShulkers) : Listener {
                         shulker.itemMeta = meta
                         player.inventory.setItem(inventoryIndex, shulker)
                     }
-
-                    SoundManager.playSound(player, "sounds.pickup")
-                    event.isCancelled = true
-                    event.item.remove()
                 }
             }
         }
