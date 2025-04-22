@@ -85,6 +85,7 @@ class SmartShulkers : JavaPlugin() {
                 if (configManager.isSellShulkerEnabled) {
                     removeRecipesByType(sellShulkerKey)
                     registerSellRecipes()
+                    registerSellListener()
                 }
             }
         }, economySetupDelay)
@@ -133,9 +134,6 @@ class SmartShulkers : JavaPlugin() {
         server.pluginManager.registerEvents(InventoryClickListener(this), this)
         server.pluginManager.registerEvents(ItemPickupListener(this), this)
         server.pluginManager.registerEvents(CraftingListener(this), this)
-        if (economy != null) {
-            registerSellListener()
-        }
     }
 
     private fun registerSellListener() {
