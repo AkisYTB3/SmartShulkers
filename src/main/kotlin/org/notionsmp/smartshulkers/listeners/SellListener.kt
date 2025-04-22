@@ -3,6 +3,7 @@ package org.notionsmp.smartshulkers.listeners
 import org.bukkit.block.ShulkerBox
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityPickupItemEvent
 import org.bukkit.inventory.ItemStack
@@ -12,8 +13,9 @@ import org.notionsmp.smartshulkers.SoundManager
 import org.notionsmp.smartshulkers.utils.ShulkerManager
 
 class SellListener(private val plugin: SmartShulkers) : Listener {
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL)
     fun onItemPickup(event: EntityPickupItemEvent) {
+        if (event.isCancelled) return
         if (plugin.economy == null) return
         if (event.entity !is Player) return
         val player = event.entity as Player
