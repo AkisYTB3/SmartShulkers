@@ -22,7 +22,7 @@ settings:
       empty: "<dark_gray>- None"
     message:
       enabled: true
-      type: ACTIONBAR # Valid options: CHAT, ACTIONBAR, NONE
+      type: ACTIONBAR # Valid options: CHAT, ACTIONBAR
       contents: "<green>Picked up <amount> <item>!"
   garbageshulker:
     name: "<gradient:red:dark_red>Garbage Shulker</gradient>"
@@ -33,7 +33,7 @@ settings:
       empty: "<dark_gray>- None"
     message:
       enabled: true
-      type: ACTIONBAR # Valid options: CHAT, ACTIONBAR, NONE
+      type: ACTIONBAR # Valid options: CHAT, ACTIONBAR
       contents: "<red>Deleted <amount> <item>!"
   sellshulker:
     name: "<gradient:green:dark_green>Sell Shulker</gradient>"
@@ -44,7 +44,7 @@ settings:
       empty: "<dark_gray>- None"
     message:
       enabled: true
-      type: ACTIONBAR # Valid options: CHAT, ACTIONBAR, NONE
+      type: ACTIONBAR # Valid options: CHAT, ACTIONBAR
       sell: "<green>Sold <amount> <item> for <price>!"
       error: "<red>This item cannot be sold!"
     sell_when: INSTA # Options: FULL, LAST_SLOT, STACK, INSTA
