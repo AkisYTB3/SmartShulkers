@@ -4,12 +4,6 @@ sounds:
   garbage: "block.lava.extinguish"
   sell: "entity.player.levelup"
   error: "block.anvil.break"
-messages:
-  type: ACTIONBAR # Valid options: CHAT, ACTIONBAR
-  pickup: "<green>Picked up <amount> <item>!"
-  garbage: "<red>Deleted <amount> <item>!"
-  sell: "<green>Sold <amount> <item> for <price>!"
-  error: "<red>This item cannot be sold!"
 permissions:
   craft_smartshulker: "smartshulkers.craft.smartshulker"
   craft_garbageshulker: "smartshulkers.craft.garbageshulker"
@@ -26,6 +20,10 @@ settings:
       accepts: "<gray>Accepts:"
       itemnames: "<dark_gray>- <item>"
       empty: "<dark_gray>- None"
+    message:
+      enabled: true
+      type: ACTIONBAR # Valid options: CHAT, ACTIONBAR, NONE
+      contents: "<green>Picked up <amount> <item>!"
   garbageshulker:
     name: "<gradient:red:dark_red>Garbage Shulker</gradient>"
     enabled: true
@@ -33,6 +31,10 @@ settings:
       accepts: "<gray>Destroys:"
       itemnames: "<dark_gray>- <item>"
       empty: "<dark_gray>- None"
+    message:
+      enabled: true
+      type: ACTIONBAR # Valid options: CHAT, ACTIONBAR, NONE
+      contents: "<red>Deleted <amount> <item>!"
   sellshulker:
     name: "<gradient:green:dark_green>Sell Shulker</gradient>"
     enabled: true
@@ -40,4 +42,9 @@ settings:
       accepts: "<gray>Sells:"
       itemnames: "<dark_gray>- <item>"
       empty: "<dark_gray>- None"
+    message:
+      enabled: true
+      type: ACTIONBAR # Valid options: CHAT, ACTIONBAR, NONE
+      sell: "<green>Sold <amount> <item> for <price>!"
+      error: "<red>This item cannot be sold!"
     sell_when: INSTA # Options: FULL, LAST_SLOT, STACK, INSTA
