@@ -63,23 +63,17 @@ class SmartShulkers : JavaPlugin() {
         registerManagers()
         registerListeners()
         registerRecipes()
-        checkForEconomyWithRetries()
+        checkForEconomy()
     }
 
-    private fun checkForEconomyWithRetries() {
+    private fun checkForEconomy() {
         Bukkit.getScheduler().runTaskLater(this, Runnable {
             if (!setupEconomy()) {
-                economySetupAttempts++
-                if (economySetupAttempts < maxEconomySetupAttempts) {
-                    logger.info("Retrying economy connection (attempt $economySetupAttempts/$maxEconomySetupAttempts)...")
-                    checkForEconomyWithRetries()
-                } else {
-                    logger.warning("==============================================")
-                    logger.warning(" VAULT NOT FOUND OR NO ECONOMY PLUGIN INSTALLED!")
-                    logger.warning(" Sell Shulker features will be disabled.")
-                    logger.warning("==============================================")
-                    configManager.disableSellShulkers()
-                }
+                logger.warning("==============================================")
+                logger.warning(" VAULT NOT FOUND OR NO ECONOMY PLUGIN INSTALLED!")
+                logger.warning(" Sell Shulker features will be disabled.")
+                logger.warning("==============================================")
+                configManager.disableSellShulkers()
             } else {
                 logger.info("Successfully hooked into ${if (isVaultUnlocked) "VaultUnlocked" else "Vault"} economy via ${economy?.name}")
                 if (configManager.isSellShulkerEnabled) {
