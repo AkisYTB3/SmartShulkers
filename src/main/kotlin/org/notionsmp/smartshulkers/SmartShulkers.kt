@@ -45,7 +45,7 @@ class SmartShulkers : JavaPlugin() {
     var economy: Economy? = null
     var isVaultUnlocked = false
     private var economySetupAttempts = 0
-    private val maxEconomySetupAttempts = 5
+    private val maxEconomySetupAttempts = 1
     private val economySetupDelay = 20L
 
     lateinit var smartShulkerKey: NamespacedKey
@@ -146,8 +146,6 @@ class SmartShulkers : JavaPlugin() {
         configManager.reload()
         removeAllRecipes()
         registerRecipes()
-        economySetupAttempts = 0
-        checkForEconomyWithRetries()
     }
 
     private fun removeAllRecipes() {
@@ -217,6 +215,5 @@ class SmartShulkers : JavaPlugin() {
                 registeredRecipeKeys.add(key)
             }
         }
-        registerSellListener()
     }
 }
