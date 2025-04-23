@@ -13,6 +13,14 @@ permissions:
   modify_sellshulker: "smartshulkers.modify.sellshulker"
   sell_command: "smartshulkers.sell"
 settings:
+  general:
+    ignore-items:
+      with-name: false
+      with-lore: true
+      named:
+        - "Ignore me :3" # If the user picks up an item with this name, it will be ignored by all shulkers
+        - "/Very Cool .*/i" # Also supports regex (this will ignore any item that starts with "VeRy cOoL " and is case-insensitive)
+      with-cmd: true # If items with custom_model_data should be ignored
   smartshulker:
     name: "<gradient:gold:yellow>SmartShulker</gradient>"
     enabled: true

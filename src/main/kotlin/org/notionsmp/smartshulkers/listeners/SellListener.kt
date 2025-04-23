@@ -22,7 +22,9 @@ class SellListener(private val plugin: SmartShulkers) : Listener {
         val player = event.entity as Player
         val item = event.item.itemStack
 
-        player.inventory.contents?.forEachIndexed { index, inventoryItem ->
+        if (plugin.configManager.shouldIgnoreItem(item)) return
+
+        player.inventory.contents.forEachIndexed { index, inventoryItem ->
             if (inventoryItem != null &&
                 ShulkerManager.isSellShulker(inventoryItem) &&
                 ShulkerManager.getShulkerItems(inventoryItem).contains(item.type)) {

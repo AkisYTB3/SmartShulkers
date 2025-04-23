@@ -2,6 +2,7 @@ package org.notionsmp.smartshulkers.config
 
 import org.bukkit.Material
 import org.bukkit.configuration.file.YamlConfiguration
+import org.bukkit.inventory.ItemStack
 import org.notionsmp.smartshulkers.SmartShulkers
 import java.io.File
 
@@ -64,5 +65,29 @@ class ConfigManager(private val plugin: SmartShulkers) {
         }
 
         return 0.0
+    }
+
+    fun shouldIgnoreItem(item: ItemStack): Boolean {
+        val meta = item.itemMeta ?: return false
+        val config = plugin.config.getConfigurationSection("settings.general.ignore-items") ?: return false
+
+        if (config.getBoolean("with-name") && meta.hasDisplayName()) return true
+        if (config.getBoolean("with-lore") && meta.hasLore()) return true
+        if (config.getBoolean("with-cmd") && meta.hasCustomModelData()) return true
+
+        val namedItems = config.getStringList("named")
+        if (meta.hasDisplayName()) {
+            val displayComponent = meta.displayName() ?: return false
+            val plainText = plugin.mm.serialize(displayComponent)
+            return namedItems.any { pattern ->
+                try {
+                    plainText.matches(Regex(pattern))
+                } catch (e: Exception) {
+                    plainText.contains(pattern, ignoreCase = true)
+                }
+            }
+        }
+
+        return false
     }
 }

@@ -21,7 +21,9 @@ class ItemPickupListener(private val plugin: SmartShulkers) : Listener {
         val player = event.entity as Player
         val item = event.item.itemStack
 
-        player.inventory.contents?.forEach { inventoryItem ->
+        if (plugin.configManager.shouldIgnoreItem(item)) return
+
+        player.inventory.contents.forEach { inventoryItem ->
             when {
                 ShulkerManager.isSmartShulker(inventoryItem) && ShulkerManager.getShulkerItems(inventoryItem).contains(item.type) -> {
                     if (!plugin.configManager.isSmartShulkerEnabled) return
@@ -30,6 +32,7 @@ class ItemPickupListener(private val plugin: SmartShulkers) : Listener {
                     }
                     return
                 }
+
                 ShulkerManager.isGarbageShulker(inventoryItem) && ShulkerManager.getShulkerItems(inventoryItem).contains(item.type) -> {
                     if (!plugin.configManager.isGarbageShulkerEnabled) return
                     handleGarbagePickup(event, player, item)
