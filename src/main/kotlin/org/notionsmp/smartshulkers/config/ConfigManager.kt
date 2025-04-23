@@ -8,6 +8,7 @@ import java.io.File
 
 class ConfigManager(private val plugin: SmartShulkers) {
     private lateinit var pricesConfig: YamlConfiguration
+    private lateinit var blacklistConfig: YamlConfiguration
 
     val isSmartShulkerEnabled get() = plugin.config.getBoolean("settings.smartshulker.enabled", true)
     val isGarbageShulkerEnabled get() = plugin.config.getBoolean("settings.garbageshulker.enabled", true)
@@ -16,11 +17,13 @@ class ConfigManager(private val plugin: SmartShulkers) {
     fun setup() {
         plugin.saveDefaultConfig()
         pricesConfig = setupPricesConfig()
+        blacklistConfig = setupBlacklistConfig()
     }
 
     fun reload() {
         plugin.reloadConfig()
         pricesConfig = setupPricesConfig()
+        blacklistConfig = setupBlacklistConfig()
     }
 
     fun disableSellShulkers() {
@@ -34,6 +37,18 @@ class ConfigManager(private val plugin: SmartShulkers) {
             plugin.saveResource("prices.yml", false)
         }
         return YamlConfiguration.loadConfiguration(file)
+    }
+
+    private fun setupBlacklistConfig(): YamlConfiguration {
+        val file = File(plugin.dataFolder, "blacklist.yml")
+        if (!file.exists()) {
+            plugin.saveResource("blacklist.yml", false)
+        }
+        return YamlConfiguration.loadConfiguration(file)
+    }
+
+    fun isBlacklisted(material: Material): Boolean {
+        return blacklistConfig.getStringList("materials").any { it.equals(material.name, ignoreCase = true) }
     }
 
     fun canSellItem(material: Material): Boolean {

@@ -52,10 +52,30 @@ class InventoryClickListener(private val plugin: SmartShulkers) : Listener {
             !ShulkerManager.isSellShulker(clicked)) return
 
         when {
-            ShulkerManager.isSmartShulker(clicked) -> modifyShulker(event, clicked, cursor, plugin.smartShulkerKey)
-            ShulkerManager.isGarbageShulker(clicked) -> modifyShulker(event, clicked, cursor, plugin.garbageShulkerKey)
+            ShulkerManager.isSmartShulker(clicked) -> handleSmartShulkerModification(event, clicked, cursor)
+            ShulkerManager.isGarbageShulker(clicked) -> handleGarbageShulkerModification(event, clicked, cursor)
             ShulkerManager.isSellShulker(clicked) -> handleSellShulkerModification(event, clicked, cursor)
         }
+    }
+
+    private fun handleSmartShulkerModification(event: InventoryClickEvent, clicked: ItemStack, cursor: ItemStack) {
+        if (plugin.configManager.isBlacklisted(cursor.type)) {
+            SoundManager.playSound(event.whoClicked as Player, "sounds.error")
+            sendShulkerMessage(event.whoClicked as Player, "smartshulker", cursor, isError = true)
+            event.isCancelled = true
+            return
+        }
+        modifyShulker(event, clicked, cursor, plugin.smartShulkerKey)
+    }
+
+    private fun handleGarbageShulkerModification(event: InventoryClickEvent, clicked: ItemStack, cursor: ItemStack) {
+        if (plugin.configManager.isBlacklisted(cursor.type)) {
+            SoundManager.playSound(event.whoClicked as Player, "sounds.error")
+            sendShulkerMessage(event.whoClicked as Player, "garbageshulker", cursor, isError = true)
+            event.isCancelled = true
+            return
+        }
+        modifyShulker(event, clicked, cursor, plugin.garbageShulkerKey)
     }
 
     private fun handleSellShulkerModification(event: InventoryClickEvent, clicked: ItemStack, cursor: ItemStack) {
