@@ -44,8 +44,6 @@ class SmartShulkers : JavaPlugin() {
     val mm = MiniMessage.miniMessage()
     var economy: Economy? = null
     var isVaultUnlocked = false
-    private var economySetupAttempts = 0
-    private val maxEconomySetupAttempts = 1
     private val economySetupDelay = 20L
 
     lateinit var smartShulkerKey: NamespacedKey
