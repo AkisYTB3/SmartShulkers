@@ -43,7 +43,7 @@ class SmartShulkers : JavaPlugin() {
     lateinit var commandManager: PaperCommandManager
     val mm = MiniMessage.miniMessage()
     var economy: Economy? = null
-    var isVaultUnlocked = false
+    private var isVaultUnlocked = false
     private val economySetupDelay = 20L
 
     lateinit var smartShulkerKey: NamespacedKey
