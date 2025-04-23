@@ -1,5 +1,6 @@
 package org.notionsmp.smartshulkers.config
 
+import org.bukkit.Material
 import org.bukkit.configuration.file.YamlConfiguration
 import org.notionsmp.smartshulkers.SmartShulkers
 import java.io.File
@@ -34,7 +35,34 @@ class ConfigManager(private val plugin: SmartShulkers) {
         return YamlConfiguration.loadConfiguration(file)
     }
 
+    fun canSellItem(material: Material): Boolean {
+        if (pricesConfig.contains(material.name)) return true
+
+        return pricesConfig.getKeys(false).any { key ->
+            key.startsWith("${material.name}x") &&
+                    key.substringAfter("x").toIntOrNull() != null
+        }
+    }
+
     fun getString(path: String): String? = plugin.config.getString(path)
     fun getDouble(path: String, default: Double = 0.0) = plugin.config.getDouble(path, default)
-    fun getPrice(material: String) = pricesConfig.getDouble(material, 0.0)
+
+    fun getPrice(material: String): Double {
+        val exactPrice = pricesConfig.getDouble(material, -1.0)
+        if (exactPrice >= 0) return exactPrice
+
+        val multiplierEntries = pricesConfig.getKeys(false).filter {
+            it.startsWith("${material}x") && it.substringAfter("x").toIntOrNull() != null
+        }
+
+        for (entry in multiplierEntries) {
+            val multiplier = entry.substringAfter("x").toInt()
+            if (multiplier > 0) {
+                val totalPrice = pricesConfig.getDouble(entry)
+                return totalPrice / multiplier
+            }
+        }
+
+        return 0.0
+    }
 }

@@ -59,7 +59,7 @@ class InventoryClickListener(private val plugin: SmartShulkers) : Listener {
     }
 
     private fun handleSellShulkerModification(event: InventoryClickEvent, clicked: ItemStack, cursor: ItemStack) {
-        if (plugin.configManager.getPrice(cursor.type.name) <= 0.0) {
+        if (!plugin.configManager.canSellItem(cursor.type)) {
             SoundManager.playSound(event.whoClicked as Player, "sounds.error")
             sendShulkerMessage(event.whoClicked as Player, "sellshulker", cursor, isError = true)
             event.isCancelled = true

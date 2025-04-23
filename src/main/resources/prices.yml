@@ -1,3 +1,22 @@
 # Prices for items in Sell Shulkers
-# Format: MATERIAL_NAME: PRICE
-# e.g. STONE: 0.5 - Makes a piece stone cost 0.5 of your currency
+#
+# Two formats are supported:
+#
+# 1. Per-item price:
+#    MATERIAL_NAME: PRICE
+#    Example: STONE: 0.5 - Makes each stone cost 0.5 currency
+#
+# 2. Stack/multiplier price:
+#    MATERIAL_NAMExNUMBER: TOTAL_PRICE
+#    Example: STONEx64: 32 - Makes each stone cost 0.5 currency (32/64)
+#             DIAMONDx3: 300 - Makes each diamond cost 100 currency (300/3)
+#
+# The system will automatically calculate the per-item price
+# Multiplier can be any positive number (x2, x64, x100, etc.)
+#
+# Notes:
+# - Prices can be specified with either format
+# - If both formats exist for same material, exact match takes priority
+# - Set price to 0 or omit to disable selling an item
+# - Use correct material names (all caps with underscores)
+# - Decimal prices are supported (e.g., 0.25)
