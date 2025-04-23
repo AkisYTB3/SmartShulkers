@@ -63,9 +63,9 @@ object ShulkerManager {
                         items.forEach {
                             add(
                                 SmartShulkers.instance.mm.deserialize(
-                                config.getString("$settingsPath.lore.itemnames")!!
-                                    .replace("<item>", getItemName(it))
-                            ))
+                                    config.getString("$settingsPath.lore.itemnames")!!
+                                        .replace("<item>", getItemName(it))
+                                ))
                         }
                     }
                 })

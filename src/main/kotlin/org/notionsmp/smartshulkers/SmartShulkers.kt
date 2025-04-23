@@ -52,6 +52,7 @@ class SmartShulkers : JavaPlugin() {
     lateinit var itemsKey: NamespacedKey
 
     private val registeredRecipeKeys = mutableSetOf<NamespacedKey>()
+    private var uncraftRecipesRegistered = false
 
     override fun onEnable() {
         instance = this
@@ -60,6 +61,7 @@ class SmartShulkers : JavaPlugin() {
         initializeKeys()
         registerManagers()
         registerListeners()
+        registerUncraftRecipes()
         registerRecipes()
         checkForEconomy()
     }
@@ -135,6 +137,8 @@ class SmartShulkers : JavaPlugin() {
     fun reload() {
         configManager.reload()
         removeAllRecipes()
+        uncraftRecipesRegistered = false
+        registerUncraftRecipes()
         registerRecipes()
     }
 
@@ -205,5 +209,40 @@ class SmartShulkers : JavaPlugin() {
                 registeredRecipeKeys.add(key)
             }
         }
+    }
+
+    private fun registerUncraftRecipes() {
+        if (uncraftRecipesRegistered) return
+
+        SHULKER_BOX_TYPES.forEach { shulkerType ->
+            val smartKey = NamespacedKey(this, "uncraft_smartshulker_${shulkerType.name.lowercase()}")
+            val garbageKey = NamespacedKey(this, "uncraft_garbageshulker_${shulkerType.name.lowercase()}")
+            val sellKey = NamespacedKey(this, "uncraft_sellshulker_${shulkerType.name.lowercase()}")
+
+            if (!registeredRecipeKeys.contains(smartKey)) {
+                Bukkit.addRecipe(ShapelessRecipe(smartKey, ItemStack(shulkerType))
+                    .apply { addIngredient(Material.BOOK) }
+                    .apply { addIngredient(shulkerType) }
+                )
+                registeredRecipeKeys.add(smartKey)
+            }
+
+            if (!registeredRecipeKeys.contains(garbageKey)) {
+                Bukkit.addRecipe(ShapelessRecipe(garbageKey, ItemStack(shulkerType))
+                    .apply { addIngredient(Material.LAVA_BUCKET) }
+                    .apply { addIngredient(shulkerType) }
+                )
+                registeredRecipeKeys.add(garbageKey)
+            }
+
+            if (!registeredRecipeKeys.contains(sellKey)) {
+                Bukkit.addRecipe(ShapelessRecipe(sellKey, ItemStack(shulkerType))
+                    .apply { addIngredient(Material.EMERALD) }
+                    .apply { addIngredient(shulkerType) }
+                )
+                registeredRecipeKeys.add(sellKey)
+            }
+        }
+        uncraftRecipesRegistered = true
     }
 }
