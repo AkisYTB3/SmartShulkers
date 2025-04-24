@@ -134,6 +134,7 @@ class SellListener(private val plugin: SmartShulkers) : Listener {
         }
 
         if (totalEarned > 0.0) {
+            plugin.economy?.depositPlayer(player, totalEarned)
             SoundManager.playSound(player, "sounds.sell")
         }
     }
