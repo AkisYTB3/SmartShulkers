@@ -32,6 +32,7 @@ settings:
       enabled: true
       type: ACTIONBAR # Valid options: CHAT, ACTIONBAR
       contents: "<green>Picked up <amount> <item>!"
+      error: "<red>This item cannot be added to Smart Shulkers!"
   garbageshulker:
     name: "<gradient:red:dark_red>Garbage Shulker</gradient>"
     enabled: true
@@ -43,6 +44,7 @@ settings:
       enabled: true
       type: ACTIONBAR # Valid options: CHAT, ACTIONBAR
       contents: "<red>Deleted <amount> <item>!"
+      error: "<red>This item cannot be added to Garbage Shulkers!"
   sellshulker:
     name: "<gradient:green:dark_green>Sell Shulker</gradient>"
     enabled: true
