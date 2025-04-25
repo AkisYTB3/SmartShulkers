@@ -7,7 +7,7 @@ import org.bukkit.block.ShulkerBox
 import org.bukkit.entity.Player
 import org.bukkit.inventory.meta.BlockStateMeta
 import org.notionsmp.smartshulkers.SmartShulkers
-import org.notionsmp.smartshulkers.SoundManager
+import org.notionsmp.smartshulkers.utils.SoundManager
 import org.notionsmp.smartshulkers.utils.ShulkerManager
 
 @CommandAlias("smartshulkers|ss")

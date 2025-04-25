@@ -1,7 +1,7 @@
-package org.notionsmp.smartshulkers
+package org.notionsmp.smartshulkers.utils
 
 import org.bukkit.entity.Player
-import org.notionsmp.smartshulkers.config.ConfigManager
+import org.notionsmp.smartshulkers.SmartShulkers
 
 object SoundManager {
     fun playSound(player: Player, soundPath: String) {

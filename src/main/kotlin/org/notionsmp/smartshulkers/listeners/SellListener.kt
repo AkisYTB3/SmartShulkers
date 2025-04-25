@@ -9,7 +9,7 @@ import org.bukkit.event.entity.EntityPickupItemEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.BlockStateMeta
 import org.notionsmp.smartshulkers.SmartShulkers
-import org.notionsmp.smartshulkers.SoundManager
+import org.notionsmp.smartshulkers.utils.SoundManager
 import org.notionsmp.smartshulkers.utils.ShulkerManager
 import org.bukkit.Material
 

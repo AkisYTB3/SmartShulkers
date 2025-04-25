@@ -1,6 +1,5 @@
 package org.notionsmp.smartshulkers.listeners
 
-import org.bukkit.Material
 import org.bukkit.block.ShulkerBox
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -10,7 +9,7 @@ import org.bukkit.event.entity.EntityPickupItemEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.BlockStateMeta
 import org.notionsmp.smartshulkers.SmartShulkers
-import org.notionsmp.smartshulkers.SoundManager
+import org.notionsmp.smartshulkers.utils.SoundManager
 import org.notionsmp.smartshulkers.utils.ShulkerManager
 
 class ItemPickupListener(private val plugin: SmartShulkers) : Listener {
