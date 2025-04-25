@@ -105,4 +105,21 @@ class ConfigManager(private val plugin: SmartShulkers) {
 
         return false
     }
+
+    fun getSoundSettings(): SoundSettings {
+        val section = plugin.config.getConfigurationSection("settings.general.sound") ?:
+        return SoundSettings("VOICE", 1.0f, 1.0f)
+
+        return SoundSettings(
+            source = section.getString("source", "VOICE") ?: "VOICE",
+            volume = section.getDouble("volume", 1.0).toFloat(),
+            pitch = section.getDouble("pitch", 1.0).toFloat()
+        )
+    }
+
+    data class SoundSettings(
+        val source: String,
+        val volume: Float,
+        val pitch: Float
+    )
 }
