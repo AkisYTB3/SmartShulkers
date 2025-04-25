@@ -23,26 +23,45 @@ class ItemPickupListener(private val plugin: SmartShulkers) : Listener {
 
         if (plugin.configManager.shouldIgnoreItem(item)) return
 
-        player.inventory.contents.forEach { inventoryItem ->
-            when {
-                ShulkerManager.isSmartShulker(inventoryItem) && ShulkerManager.getShulkerItems(inventoryItem).contains(item.type) -> {
-                    if (!plugin.configManager.isSmartShulkerEnabled) return
-                    if (inventoryItem != null) {
-                        handleAutoPickup(event, player, inventoryItem, item)
-                    }
-                    return
-                }
+        var itemHandled = false
 
-                ShulkerManager.isGarbageShulker(inventoryItem) && ShulkerManager.getShulkerItems(inventoryItem).contains(item.type) -> {
-                    if (!plugin.configManager.isGarbageShulkerEnabled) return
+        if (plugin.configManager.isSmartShulkerEnabled) {
+            player.inventory.contents.forEach { inventoryItem ->
+                if (itemHandled) return@forEach
+
+                if (ShulkerManager.isSmartShulker(inventoryItem) &&
+                    ShulkerManager.getShulkerItems(inventoryItem).contains(item.type)) {
+
+                    if (tryAddToShulker(event, player, inventoryItem, item, "smartshulker")) {
+                        itemHandled = true
+                    }
+                }
+            }
+        }
+
+        if (!itemHandled && plugin.configManager.isGarbageShulkerEnabled) {
+            player.inventory.contents.forEach { inventoryItem ->
+                if (itemHandled) return@forEach
+
+                if (ShulkerManager.isGarbageShulker(inventoryItem) &&
+                    ShulkerManager.getShulkerItems(inventoryItem).contains(item.type)) {
+
                     handleGarbagePickup(event, player, item)
-                    return
+                    itemHandled = true
                 }
             }
         }
     }
 
-    private fun handleAutoPickup(event: EntityPickupItemEvent, player: Player, shulker: ItemStack, item: ItemStack) {
+    private fun tryAddToShulker(
+        event: EntityPickupItemEvent,
+        player: Player,
+        shulker: ItemStack?,
+        item: ItemStack,
+        shulkerType: String
+    ): Boolean {
+        if (shulker == null) return false
+
         (shulker.itemMeta as? BlockStateMeta)?.let { meta ->
             (meta.blockState as? ShulkerBox)?.let { shulkerBox ->
                 val remaining = shulkerBox.inventory.addItem(item)
@@ -51,12 +70,14 @@ class ItemPickupListener(private val plugin: SmartShulkers) : Listener {
                     shulker.itemMeta = meta
                     player.inventory.setItem(player.inventory.first(shulker), shulker)
                     SoundManager.playSound(player, "sounds.pickup")
-                    sendShulkerMessage(player, "smartshulker", item)
+                    sendShulkerMessage(player, shulkerType, item)
                     event.isCancelled = true
                     event.item.remove()
+                    return true
                 }
             }
         }
+        return false
     }
 
     private fun handleGarbagePickup(event: EntityPickupItemEvent, player: Player, item: ItemStack) {
