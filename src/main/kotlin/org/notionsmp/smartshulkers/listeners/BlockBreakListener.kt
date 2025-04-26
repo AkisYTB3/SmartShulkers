@@ -55,6 +55,6 @@ class BlockBreakListener(private val plugin: SmartShulkers) : Listener {
 
         newMeta.blockState = newShulkerBox
         newShulker.itemMeta = newMeta
-        event.block.world.dropItemNaturally(event.block.location, newShulker)
+        event.block.world.dropItemNaturally(event.block.location.add(0.5, 0.5, 0.5), newShulker)
     }
 }
