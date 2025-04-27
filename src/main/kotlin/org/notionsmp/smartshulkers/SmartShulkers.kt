@@ -128,7 +128,7 @@ class SmartShulkers : JavaPlugin() {
         server.pluginManager.registerEvents(InventoryClickListener(this), this)
         server.pluginManager.registerEvents(ItemPickupListener(this), this)
         server.pluginManager.registerEvents(CraftingListener(this), this)
-        UncraftingListener()
+        server.pluginManager.registerEvents(UncraftingListener(), this);
     }
 
     private fun registerSellListener() {
