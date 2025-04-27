@@ -221,7 +221,6 @@ class SmartShulkers : JavaPlugin() {
 
             if (!registeredRecipeKeys.contains(smartKey)) {
                 Bukkit.addRecipe(ShapelessRecipe(smartKey, ItemStack(shulkerType))
-                    .apply { addIngredient(Material.BOOK) }
                     .apply { addIngredient(shulkerType) }
                 )
                 registeredRecipeKeys.add(smartKey)
@@ -229,7 +228,6 @@ class SmartShulkers : JavaPlugin() {
 
             if (!registeredRecipeKeys.contains(garbageKey)) {
                 Bukkit.addRecipe(ShapelessRecipe(garbageKey, ItemStack(shulkerType))
-                    .apply { addIngredient(Material.LAVA_BUCKET) }
                     .apply { addIngredient(shulkerType) }
                 )
                 registeredRecipeKeys.add(garbageKey)
@@ -237,7 +235,6 @@ class SmartShulkers : JavaPlugin() {
 
             if (!registeredRecipeKeys.contains(sellKey)) {
                 Bukkit.addRecipe(ShapelessRecipe(sellKey, ItemStack(shulkerType))
-                    .apply { addIngredient(Material.EMERALD) }
                     .apply { addIngredient(shulkerType) }
                 )
                 registeredRecipeKeys.add(sellKey)
