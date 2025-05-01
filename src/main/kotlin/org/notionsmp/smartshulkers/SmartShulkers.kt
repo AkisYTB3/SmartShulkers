@@ -4,8 +4,8 @@ import co.aikar.commands.PaperCommandManager
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.milkbowl.vault.economy.Economy
 import org.bukkit.Bukkit
-import org.bukkit.NamespacedKey
 import org.bukkit.Material
+import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.ShapelessRecipe
 import org.bukkit.plugin.RegisteredServiceProvider
@@ -13,6 +13,7 @@ import org.bukkit.plugin.java.JavaPlugin
 import org.notionsmp.smartshulkers.commands.ShulkerCommands
 import org.notionsmp.smartshulkers.config.ConfigManager
 import org.notionsmp.smartshulkers.listeners.*
+import org.notionsmp.smartshulkers.utils.Metrics
 import org.notionsmp.smartshulkers.utils.ShulkerManager
 
 class SmartShulkers : JavaPlugin() {
@@ -64,6 +65,11 @@ class SmartShulkers : JavaPlugin() {
         registerUncraftRecipes()
         registerRecipes()
         checkForEconomy()
+        initMetrics()
+    }
+
+    private fun initMetrics() {
+        val metrics: Metrics = Metrics(this, 25707)
     }
 
     private fun checkForEconomy() {
