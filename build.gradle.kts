@@ -78,6 +78,12 @@ tasks.build {
     dependsOn("shadowJar")
 }
 
+sourceSets {
+    main {
+        java.srcDirs("src/main/kotlin", "src/main/java")
+    }
+}
+
 tasks.processResources {
     val props = mapOf("version" to version)
     inputs.properties(props)
