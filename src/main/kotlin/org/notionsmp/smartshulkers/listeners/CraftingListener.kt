@@ -1,6 +1,6 @@
 package org.notionsmp.smartshulkers.listeners
 
-import org.bukkit.Material
+import org.bukkit.block.ShulkerBox
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.inventory.PrepareItemCraftEvent
@@ -12,36 +12,70 @@ import org.notionsmp.smartshulkers.utils.ShulkerManager
 class CraftingListener(private val plugin: SmartShulkers) : Listener {
     @EventHandler
     fun onPrepareCraft(event: PrepareItemCraftEvent) {
-        val inventory = event.inventory
+        val recipe = event.recipe ?: return
+        val matrix = event.inventory.matrix
+        val shulkerItem = matrix.firstOrNull { it != null && ShulkerManager.isShulkerBox(it.type) } ?: return
 
-        if (inventory.matrix.size == 1 && inventory.matrix[0]?.let {
-                ShulkerManager.isSmartShulker(it) || ShulkerManager.isGarbageShulker(it) || ShulkerManager.isSellShulker(it)
-            } == true) {
-            val shulker = inventory.matrix[0]!!
-            val normalShulker = ItemStack(shulker.type)
-            (shulker.itemMeta as? BlockStateMeta)?.blockState?.let {
-                (normalShulker.itemMeta as? BlockStateMeta)?.blockState = it
-            }
-            event.inventory.result = normalShulker
+        if (ShulkerManager.isSmartShulker(shulkerItem) || ShulkerManager.isGarbageShulker(shulkerItem) || ShulkerManager.isSellShulker(shulkerItem)) {
+            val originalMeta = shulkerItem.itemMeta as? BlockStateMeta ?: return
+            val originalState = originalMeta.blockState as? ShulkerBox ?: return
+
+            val newItem = ItemStack(shulkerItem.type)
+            val newMeta = newItem.itemMeta as? BlockStateMeta ?: return
+            val newState = newMeta.blockState as? ShulkerBox ?: return
+
+            newState.inventory.contents = originalState.inventory.contents
+            newState.update()
+
+            newMeta.blockState = newState
+            newItem.itemMeta = newMeta
+
+            event.inventory.result = newItem
             return
         }
 
-        val recipe = event.recipe ?: return
-        when {
-            ShulkerManager.isShulkerBox(recipe.result?.type) -> {
-                if (ShulkerManager.isSmartShulker(inventory.result) &&
-                    !event.view.player.hasPermission(plugin.configManager.getString("permissions.craft_smartshulker")!!)) {
+        if (ShulkerManager.isShulkerBox(recipe.result?.type)) {
+            val result = event.inventory.result ?: return
+
+            if (ShulkerManager.isSmartShulker(result)) {
+                if (!event.view.player.hasPermission(plugin.configManager.getString("permissions.craft_smartshulker")!!)) {
                     event.inventory.result = null
+                    return
                 }
-                if (ShulkerManager.isGarbageShulker(inventory.result) &&
-                    !event.view.player.hasPermission(plugin.configManager.getString("permissions.craft_garbageshulker")!!)) {
-                    event.inventory.result = null
-                }
-                if (ShulkerManager.isSellShulker(inventory.result) &&
-                    !event.view.player.hasPermission(plugin.configManager.getString("permissions.craft_sellshulker")!!)) {
+                copyContents(shulkerItem, result)
+            }
+            else if (ShulkerManager.isGarbageShulker(result)) {
+                if (!event.view.player.hasPermission(plugin.configManager.getString("permissions.craft_garbageshulker")!!)) {
                     event.inventory.result = null
                 }
             }
+            else if (ShulkerManager.isSellShulker(result)) {
+                if (!event.view.player.hasPermission(plugin.configManager.getString("permissions.craft_sellshulker")!!)) {
+                    event.inventory.result = null
+                }
+            }
+
+            else {
+                event.inventory.result = null
+            }
         }
+
+        else if (matrix.any { it != null && ShulkerManager.isShulkerBox(it.type) }) {
+            event.inventory.result = null
+        }
+    }
+
+    private fun copyContents(source: ItemStack, destination: ItemStack) {
+        val sourceMeta = source.itemMeta as? BlockStateMeta ?: return
+        val sourceState = sourceMeta.blockState as? ShulkerBox ?: return
+        val contents = sourceState.inventory.contents ?: return
+
+        val destMeta = destination.itemMeta as? BlockStateMeta ?: return
+        val destState = destMeta.blockState as? ShulkerBox ?: return
+
+        destState.inventory.contents = contents
+        destState.update()
+        destMeta.blockState = destState
+        destination.itemMeta = destMeta
     }
 }
