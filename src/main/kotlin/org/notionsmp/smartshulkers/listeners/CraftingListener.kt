@@ -1,5 +1,7 @@
 package org.notionsmp.smartshulkers.listeners
 
+import org.bukkit.DyeColor
+import org.bukkit.Material
 import org.bukkit.block.ShulkerBox
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -15,6 +17,38 @@ class CraftingListener(private val plugin: SmartShulkers) : Listener {
         val recipe = event.recipe ?: return
         val matrix = event.inventory.matrix
         val shulkerItem = matrix.firstOrNull { it != null && ShulkerManager.isShulkerBox(it.type) } ?: return
+        val dyeItem = matrix.firstOrNull { it != null && it.type.toString().endsWith("_DYE") }
+
+        if (dyeItem != null) {
+            val dyeColor = DyeColor.valueOf(dyeItem.type.toString().removeSuffix("_DYE"))
+            val newShulkerType = Material.valueOf("${dyeColor}_SHULKER_BOX")
+
+            if (ShulkerManager.isSmartShulker(shulkerItem)) {
+
+                val newItem = ShulkerManager.createSmartShulker(ItemStack(newShulkerType), emptyList())
+                copyContents(shulkerItem, newItem)
+                event.inventory.result = newItem
+                return
+            } else if (ShulkerManager.isGarbageShulker(shulkerItem)) {
+
+                val newItem = ShulkerManager.createGarbageShulker(ItemStack(newShulkerType), emptyList())
+                copyContents(shulkerItem, newItem)
+                event.inventory.result = newItem
+                return
+            } else if (ShulkerManager.isSellShulker(shulkerItem)) {
+
+                val newItem = ShulkerManager.createSellShulker(ItemStack(newShulkerType), emptyList())
+                copyContents(shulkerItem, newItem)
+                event.inventory.result = newItem
+                return
+            } else {
+
+                val newItem = ItemStack(newShulkerType)
+                copyContents(shulkerItem, newItem)
+                event.inventory.result = newItem
+                return
+            }
+        }
 
         if (ShulkerManager.isSmartShulker(shulkerItem) || ShulkerManager.isGarbageShulker(shulkerItem) || ShulkerManager.isSellShulker(shulkerItem)) {
             val originalMeta = shulkerItem.itemMeta as? BlockStateMeta ?: return
@@ -54,12 +88,10 @@ class CraftingListener(private val plugin: SmartShulkers) : Listener {
                     event.inventory.result = null
                 }
             }
-
             else {
                 event.inventory.result = null
             }
         }
-
         else if (matrix.any { it != null && ShulkerManager.isShulkerBox(it.type) }) {
             event.inventory.result = null
         }
